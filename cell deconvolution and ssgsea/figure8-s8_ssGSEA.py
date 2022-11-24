@@ -68,6 +68,11 @@ def summary_EA():
                             for i in df_toplot.index:
                                 F, p = stats.f_oneway(df_toplot.loc[i,"ADEX"], df_toplot.loc[i,"Pancreatic Progenitor"], df_toplot.loc[i,"Immunogenic"], df_toplot.loc[i,"Squamous"])
                                 pval.append(p)
+                        elif model.split(" ")[0]=="Puleo":
+                            pval = []
+                            for i in df_toplot.index:
+                                F, p = stats.f_oneway(df_toplot.loc[i,"Desmoplastic"], df_toplot.loc[i,"ImmuneClassical"], df_toplot.loc[i,"PureBasal-like"], df_toplot.loc[i,"PureClassical"], df_toplot.loc[i,"StromaActivated"])
+                                pval.append(p)
     
                         df_toplot["removenan"] = pval
                         df_toplot = df_toplot.dropna()
@@ -126,17 +131,34 @@ def summary_EA():
                                     df_ea_bailey[s5] = 0
                                     df_ea_bailey.loc[data_name, s5] += 1
 
+                            elif model.split(" ")[0]=="Puleo" and len(set(df_toplot.columns))==5 and min([list(df_toplot.columns).count(x) for x in set(df_toplot.columns)])>1:
+                                s1 = ("Desmoplastic", df_toplot.loc[i,"Desmoplastic"].mean(), "+" if df_toplot.loc[i,"Desmoplastic"].mean()>0 else "-")
+                                s2 = ("ImmuneClassical", df_toplot.loc[i,"ImmuneClassical"].mean(), "+" if df_toplot.loc[i,"ImmuneClassical"].mean()>0 else "-")
+                                s3 = ("PureBasal-like", df_toplot.loc[i,"PureBasal-like"].mean(), "+" if df_toplot.loc[i,"PureBasal-like"].mean()>0 else "-")
+                                s4 = ("PureClassical", df_toplot.loc[i,"PureClassical"].mean(), "+" if df_toplot.loc[i,"PureClassical"].mean()>0 else "-")
+                                s5 = ("StromaActivated", df_toplot.loc[i,"StromaActivated"].mean(), "+" if df_toplot.loc[i,"StromaActivated"].mean()>0 else "-")
+
+                                s6 = i+ " _ " + max([s1,s2,s3,s4,s5], key=lambda item:abs(item[1]))[0]+ " ("+max([s1,s2,s3,s4,s5], key=lambda item:abs(item[1]))[2]+")"
+                                if s6 in df_ea_puleo.columns: 
+                                    df_ea_puleo.loc[data_name, s6] += 1
+                                else: 
+                                    df_ea_puleo[s6] = 0
+                                    df_ea_puleo.loc[data_name, s6] += 1
+
         df_ea_moffitt = df_ea_moffitt.T
         df_ea_collisson = df_ea_collisson.T
         df_ea_bailey = df_ea_bailey.T
+        df_ea_puleo = df_ea_puleo.T
         # i want to sort the terms according to the amount of datasets in which they are enriched (if==0 means not enriched, so i count the nonzero elements)
         df_ea_moffitt["nonzero"] = df_ea_moffitt[df_ea_moffitt!=0].count(axis=1)
         df_ea_collisson["nonzero"] = df_ea_collisson[df_ea_collisson!=0].count(axis=1)
         df_ea_bailey["nonzero"] = df_ea_bailey[df_ea_bailey!=0].count(axis=1)
-        
+        df_ea_puleo["nonzero"] = df_ea_puleo[df_ea_puleo!=0].count(axis=1)
+
         summary_dict[enrich_name]["Moffitt"] = df_ea_moffitt.sort_values(by="nonzero", ascending=False).iloc[:,:-1]
         summary_dict[enrich_name]["Collisson"] = df_ea_collisson.sort_values(by="nonzero", ascending=False).iloc[:,:-1]
         summary_dict[enrich_name]["Bailey"] = df_ea_bailey.sort_values(by="nonzero", ascending=False).iloc[:,:-1]
+        summary_dict[enrich_name]["Puleo"] = df_ea_puleo.sort_values(by="nonzero", ascending=False).iloc[:,:-1]
     return(summary_dict)
     
 # =============================================================================
@@ -150,11 +172,11 @@ def plot_summary(ea_type):
     import matplotlib.pyplot as plt
     
     plt.figure()
-    summary_count_mat = pd.concat([summary_EA_res[ea_type]["Moffitt"], summary_EA_res[ea_type]["Collisson"], summary_EA_res[ea_type]["Bailey"]])
+    summary_count_mat = pd.concat([summary_EA_res[ea_type]["Moffitt"], summary_EA_res[ea_type]["Collisson"], summary_EA_res[ea_type]["Bailey"], summary_EA_res[ea_type]["Puleo"]])
     # to group same terms
     summary_count_mat["term"] = [i.split(" _")[0] for i in summary_count_mat.index]
     summary_count_mat["type"] = [i.split(" _")[1] for i in summary_count_mat.index]
-    summary_count_mat = summary_count_mat.groupby(['term'],as_index=False).agg({'type': '~'.join, 'Moffitt': 'sum', 'Collisson':'sum', 'Bailey':'sum', 
+    summary_count_mat = summary_count_mat.groupby(['term'],as_index=False).agg({'type': '~'.join, 'Moffitt': 'sum', 'Collisson':'sum', 'Bailey':'sum', 'Puleo':'sum', 
                                              'TCGA-PAAD':'sum', 'Badea et al.':'sum','Yang et al':'sum', 'ICGC-Array':'sum', 'Sandhu et al':'sum'})
     summary_count_mat.index = summary_count_mat["term"]+" _ "+summary_count_mat["type"]
     summary_count_mat = summary_count_mat.drop(["term", "type"], axis=1)
@@ -164,7 +186,8 @@ def plot_summary(ea_type):
     summary_count_mat = summary_count_mat.sort_values(by="sum", ascending=False).iloc[:,:-1]
 
     mat_toplot = summary_count_mat.copy()
-    mat_toplot[["Basal", "Classical", "Classical PDA", "QM-PDA", "Exocrine-like PDA", "Squamous", "Pancreatic Progenitor", "ADEX", "Immunogenic"]] = 0
+    mat_toplot[["Basal", "Classical", "Classical PDA", "QM-PDA", "Exocrine-like PDA", "Squamous", "Pancreatic Progenitor", "ADEX", "Immunogenic","Desmoplastic","ImmuneClassical",
+           "PureBasal-like", "PureClassical", "StromaActivated"]] = 0
     mat_toplot.index = [i.split(" _")[0] for i in mat_toplot.index]
 
     terms_to_drop = []
@@ -174,8 +197,8 @@ def plot_summary(ea_type):
         counting = []
         for j in term.split("_ ")[1].split("~"):
             subtype_ = j[1:].split("(")[0][:-1]
-            if j[-2] == "-": direction = "cornflowerblue"
-            elif j[-2] == "+": direction = "darkorange"
+            if j[-2] == "-": direction = "tab:cyan"
+            elif j[-2] == "+": direction = "tab:pink"
             mat_toplot.loc[term.split(" _")[0], subtype_] = direction
             counting.append(subtype_)
         for i in counting:
@@ -184,50 +207,52 @@ def plot_summary(ea_type):
     print(len(terms_to_drop))
 
     col_df=pd.DataFrame([mat_toplot["Basal"], mat_toplot["Classical"], mat_toplot["Classical PDA"], mat_toplot["QM-PDA"], mat_toplot["Exocrine-like PDA"], 
-                                    mat_toplot["Squamous"], mat_toplot["Pancreatic Progenitor"], mat_toplot["ADEX"], mat_toplot["Immunogenic"]]).T
-    col_df["Classical"] = ["cornflowerblue" if i=="darkorange" else "darkorange" if i=="cornflowerblue" else i for i in mat_toplot["Basal"]]
-            
+                                    mat_toplot["Squamous"], mat_toplot["Pancreatic Progenitor"], mat_toplot["ADEX"], mat_toplot["Immunogenic"],
+                         mat_toplot["Desmoplastic"], mat_toplot["ImmuneClassical"], mat_toplot["PureBasal-like"], mat_toplot["PureClassical"], mat_toplot["StromaActivated"]]).T
+    
+    mat_toplot.index = ["oxidoreductase activity, acting on paired donors" if " ".join(i.split(" ")[:12])=='oxidoreductase activity, acting on paired donors, with incorporation or reduction of molecular' else i for i in mat_toplot.index]
+        
     col_df = col_df.drop(terms_to_drop, axis=0)
     mat_toplot = mat_toplot.drop(terms_to_drop, axis=0)
     
-    c=sns.clustermap(mat_toplot.iloc[:30,:8], row_colors=col_df.replace(0,"white"), linewidths=0.6,
-                   cmap="summer", row_cluster=False, col_cluster=False, yticklabels=True, annot=True, figsize=(8,7), annot_kws={"size": 6})
+    c=sns.clustermap(mat_toplot.iloc[:30,:9], row_colors=col_df.replace(0,"white"), linewidths=0.6,
+                   cmap="summer", row_cluster=False, col_cluster=False, yticklabels=True, annot=True, figsize=(27,14), annot_kws={"size": 9.5})
+                    #KEGG:figsize=(10,7); react:figsize=(12,7); CC:(8,7); MF:(11,7); BP:13,7, bioc(12,7)
     # row_colors 
     ax_row_colors = c.ax_row_colors; box = ax_row_colors.get_position()
     box_heatmap = c.ax_heatmap.get_position()
-    # adjust coordinates according to the gene_set
-    ax_row_colors.set_position([box_heatmap.x0-0.13, box.y0, box.width*0.65, box.height])
-    c.ax_row_colors.tick_params(pad=1, labelsize=6.5)
-    c.ax_row_colors.set_xticklabels(["Basal", "Classical", "Classical PDA", "QM-PDA", "Exocrine-like PDA", "Squamous", "Pancreatic Progenitor", "ADEX", "Immunogenic"])
+    ax_row_colors.set_position([box_heatmap.x0-0.13, box.y0, box.width*0.73, box.height]) #KEGG:box_heatmap.x0-0.12, box.y0, box.width*0.65, box.height: react=.x0-0.105; CC:.x0-0.13; MF:.x0-0.09, BP:.x0-0.091; bioc0.087
+    c.ax_row_colors.tick_params(pad=1, labelsize=11) #KEGG:pad=1, labelsize=6.5
+    c.ax_row_colors.set_xticklabels(["Basal", "Classical", "Classical PDA", "QM-PDA", "Exocrine-like PDA", "Squamous", "Pancreatic Progenitor", "ADEX", "Immunogenic", "Desmoplastic","ImmuneClassical",
+               "PureBasal-like", "PureClassical", "StromaActivated"])
 
+    #sns.set(font_scale=2)
     # heatmap, ticks and labels
-    c.ax_heatmap.tick_params(labelsize=7, length=2, width=0.8)
-    c.ax_heatmap.set_yticklabels(c.ax_heatmap.get_ymajorticklabels(), fontsize = 6.9) 
-    c.ax_heatmap.set_xticklabels(['Moffitt et al.','Collisson et al.','Bailey et al.','TCGA-PAAD','Badea et al.','Yang et al.','ICGC-Array','Sandhu et al.'], 
-                                 fontsize = 7, rotation=90)
+    c.ax_heatmap.tick_params(labelsize=10, length=2, width=1) #KEGG:labelsize=7, length=2, width=0.8
+    c.ax_heatmap.set_yticklabels(c.ax_heatmap.get_ymajorticklabels(), fontsize = 11.5) #KEGG:fontsize = 6.9
+    c.ax_heatmap.set_xticklabels(['Moffitt et al.','Collisson et al.','Bailey et al.', 'Puleo et al.', 'TCGA-PAAD','Badea et al.','Yang et al.','ICGC-Array','Sandhu et al.'], fontsize = 12, rotation=90)
     
     # title
     if ea_type == 'CC': ea_title = "Cellular components"
     elif ea_type == "MF": ea_title = "Molecular functions"
     elif ea_type == "BP": ea_title = "Biological process"
-    elif ea_type in ["KEGG", "Reactome"]: ea_title = ea_type + " pathways"
+    elif ea_type in ["KEGG", "Reactome", "BioCarta"]: ea_title = ea_type + " pathways"
     
-    # adjust coordinates according to the gene_set
-    c.fig.suptitle("ssGSEA - "+ea_title, x=0.38, y=0.91, fontsize=9)
+    c.fig.suptitle("ssGSEA - "+ea_title, x=0.38, y=0.91, fontsize=14) #KEGG:x=0.48, y=0.91, fontsize=9; react:x=44; CC:53; MF:0.36; BP:.41; bioc=.36
     
-    # adjust colorbar according to the gene_set
-    c.cax.set_position([.08, .4, .01, .3]) 
-    c.cax.tick_params(labelsize=6.5, length=2, width=0.8)
+    # colorbar
+    c.cax.set_position([.08, .4, .01, .3])  #KEGG:[.15, .4, .01, .3] #react:([.135, .4, .01, .3]); CC:[.155,..]; MF:[.1,..]; BP:.115; bioc.1
+    c.cax.tick_params(labelsize=10, length=2, width=0.8) #KEGG:labelsize=6.5, length=2, width=0.8
     
     # legend
-    label_col1 = {"down": "cornflowerblue", "up": "darkorange"}
-    labels1 = ["down" if i[-2]=="-" else "up" for i in summary_count_mat.iloc[:30,:].index]
+    label_col1 = {"down": "tab:cyan", "up": "tab:pink"}
+    labels1 = ["down", "up"]
+    print(labels1)
     for label in set(labels1):
         c.ax_col_dendrogram.bar(0, 0, color=label_col1[label], label=label, linewidth=0)
-    c.ax_col_dendrogram.legend(loc="lower center", ncol=2, facecolor="white", fontsize=8)   
+    c.ax_col_dendrogram.legend(loc="lower center", ncol=2, facecolor="white", fontsize=11)   
     
-    plt.show()
-    
+    #plt.savefig("/nfs/home/users/mlautizi/PDAC/analysis - figures/ssGSEA/summary/"+ea_type+"_summary_table.svg", bbox_inches='tight', format='svg')
     return mat_toplot.iloc[:,:8]
 
 mat = plot_summary("KEGG")
