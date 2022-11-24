@@ -3,6 +3,7 @@
 moffitt_df      <- read.table(...)
 collisson_df    <- read.table(...)
 bailey_df       <- read.table(...)
+puleo_df        <- read.table(...)
 icgc_array_df   <- read.table(...)
 badea_df        <- read.table(...)
 tcga_df         <- read.table(...)
@@ -13,6 +14,7 @@ sandhu_df       <- read.table(...)
 moffitt_df$batch      <- rep(1, nrow(moffitt_df     ))
 collisson_df$batch    <- rep(2, nrow(collisson_df   ))
 bailey_df$batch       <- rep(3, nrow(bailey_df      ))
+puleo_df$batch        <- rep(3, nrow(puleo_df       ))
 icgc_array_df$batch   <- rep(4, nrow(icgc_array_df  ))
 badea_df$batch        <- rep(5, nrow(badea_df       ))
 tcga_df$batch         <- rep(6, nrow(tcga_df        ))
@@ -23,6 +25,7 @@ sandhu_df$batch       <- rep(8, nrow(sandhu_df     ))
 moffitt_df      <- as.data.frame(t(moffitt_df))
 collisson_df    <- as.data.frame(t(collisson_df))
 bailey_df       <- as.data.frame(t(bailey_df))
+puleo_df        <- as.data.frame(t(puleo_df))
 icgc_array_df   <- as.data.frame(t(icgc_array_df))
 badea_df        <- as.data.frame(t(badea_df))
 tcga_df         <- as.data.frame(t(tcga_df))
@@ -31,7 +34,8 @@ sandhu_df       <- as.data.frame(t(sandhu_df))
 
 moffitt_df$genes      <- rownames(moffitt_df)      
 collisson_df$genes    <- rownames(collisson_df)    
-bailey_df$genes       <- rownames(bailey_df)      
+bailey_df$genes       <- rownames(bailey_df)  
+puleo_df$genes        <- rownames(puleo_df)  
 icgc_array_df$genes   <- rownames(icgc_array_df)  
 badea_df$genes        <- rownames(badea_df)       
 tcga_df$genes         <- rownames(tcga_df)        
@@ -39,7 +43,7 @@ yang_df$genes         <- rownames(yang_df)
 sandhu_df$genes       <- rownames(sandhu_df)      
 
 # combine all the datasets
-datasets = list(moffitt_df, collisson_df, bailey_df, icgc_array_df, badea_df, tcga_df, yang_df, sandhu_df)
+datasets = list(moffitt_df, collisson_df, bailey_df, puleo_df, icgc_array_df, badea_df, tcga_df, yang_df, sandhu_df)
 require(plyr)
 df_all <- join_all(datasets, by = 'genes', type="inner")
 rownames(df_all) <- df_all$genes
@@ -47,7 +51,7 @@ df_all$genes <- NULL
 df_all <- as.data.frame(t(df_all))
 
 # save data NOT corrected
-write.csv(df_all, "/nfs/home/users/mlautizi/PDAC/data/all_datasets_notCorrected.csv")
+write.csv(df_all, .../all_datasets_notCorrected.csv")
 
 
 # remove batch effect
@@ -60,4 +64,4 @@ df_all_corr <- limma::removeBatchEffect(df2, batch)
 df_all_corr <- as.data.frame(t(df_all_corr))
 df_all_corr$batch <- batch
 # save dataset corrected
-write.csv(df_all_corr, "/nfs/home/users/mlautizi/PDAC/data/all_datasets_batchCorrected.csv")
+write.csv(df_all_corr, ".../all_datasets_batchCorrected.csv")
