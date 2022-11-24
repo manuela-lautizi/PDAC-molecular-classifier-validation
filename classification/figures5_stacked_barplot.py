@@ -22,7 +22,7 @@ import pandas as pd
 
 for model in pred.keys():
     for cohort in pred[model].keys():
-        if cohort in ["Moffitt", "Collisson", "Bailey"]: 
+        if cohort in ["Moffitt", "Collisson", "Bailey", "Puleo"]: 
             if cohort+" et al." in df_with_subtypes.keys():
                 real_pred = pd.DataFrame({'Real': list(df_with_subtypes[cohort+" et al."][1]), 'Predicted':pred[model][cohort]})
                 real_pred.groupby(['Predicted','Real']).size().unstack().plot.bar(stacked=True)
