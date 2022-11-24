@@ -56,38 +56,81 @@ def clustering(data, data_name, signature, signature_name, subtype, z_score, plo
 
     if plot:
         # assign colors to clusters
-        data["Clusters"] = ["plum" if i==1 else "cadetblue" if i==2 else "gold" if i==3 else "skyblue" for i in clust_lab] 
+        data["Clusters"] = ["plum" if i==1 else "cadetblue" if i==2 else "gold" if i==3 else "skyblue" if i==4 else "coral" for i in clust_lab] 
     
         if compareWreal:
             data["Real"]  = list(real_subtype)
     
-            labels_real = {"Basal":"orange", "Classical":"dodgerblue", "Classical PDA":"mediumvioletred", "Exocrine-like PDA":"dodgerblue", "QM-PDA":"lightgrey",
-                           "ADEX":"mediumvioletred", "Pancreatic Progenitor":"dodgerblue", "Squamous":"lightgrey", "Immunogenic":"orange",
-                           "KRT81-pos.":"dodgerblue", "HNF1A-pos.":"mediumvioletred", "Double negative":"lightgrey"}
+            labels_real = {"Basal":"orange", "Classical":"dodgerblue", 
+                       "Classical PDA":"mediumvioletred", "Exocrine-like PDA":"dodgerblue", "QM-PDA":"lightgrey",
+                       "ADEX":"mediumvioletred", "Pancreatic Progenitor":"dodgerblue", "Squamous":"lightgrey", "Immunogenic":"orange",
+                       "Desmoplastic":"mediumvioletred", "ImmuneClassical":"dodgerblue", "PureBasal-like":"lightgrey", "PureClassical":"orange", "StromaActivated":"olive"}
     
             labels_real_name = list(data["Real"])       
             data["Real"] = data.Real.map(labels_real)
                         
+            # i round all the values to 2 decimals and sort from lower to higher
+            sorted_ = pd.Series([round(i,2) for i in pamg_dict[data_name]], index=pamg_dict[data_name].index).sort_values()
+            # determin a palette of colors of the same size
+            pamg_pal = sns.cubehelix_palette(sorted_.size, dark=0.2, light=1)
+            # zip together the sorted pamg values and color vector
+            pamg_lut = dict(zip(sorted_, pamg_pal))
+            pamg_colors = sorted_.map(pamg_lut)
+
+            sorted_df = pd.DataFrame(pamg_colors)
+            sorted_df["PAMG"] = list(pamg_colors)
+            data = pd.merge(data, sorted_df, left_index=True, right_index=True).drop(0, axis=1)
+
             data = data.sort_values("Clusters")
-            g=sns.clustermap(data = data.drop(["Clusters", "Real"],axis=1), cmap="Spectral", figsize=(7,7),
-                           cbar_kws = {"shrink": 0.5}, xticklabels=False, yticklabels=False, row_cluster=False, col_cluster=True, z_score=1,
-                           row_colors=pd.DataFrame([data["Clusters"],data["Real"]]).T, colors_ratio=.03, metric="correlation")
+            g=sns.clustermap(data.drop(["Clusters", "Real", "PAMG"],axis=1), cmap="Spectral", figsize=(5,5),
+                           cbar_kws = {"shrink": 0.8, "fraction":0.1}, 
+                           xticklabels=False, yticklabels=False, row_cluster=False, col_cluster=True, z_score=1,
+                           row_colors=pd.DataFrame([data["Clusters"],data["Real"], data["PAMG"]]).T, colors_ratio=.03, metric="correlation")
+            
+            # add colorbar for PAMG
+            norm = plt.Normalize(pamg_dict[data_name].min(), pamg_dict[data_name].max())
+            sm = plt.cm.ScalarMappable(cmap=sns.cubehelix_palette(pamg_dict[data_name].unique().size, dark=0.4, light=1, as_cmap=True), norm=norm)
+            sm.set_array([])
+            ax = g.ax_heatmap
         
             for label in set(labels_real_name):
                 g.ax_row_dendrogram.bar(0, 0, color=labels_real[label], label=label, linewidth=0)
             g.ax_row_dendrogram.legend(loc="best", ncol=1, facecolor="white", fontsize=10)
+
+            g.fig.text(x=-0.001, y=0.45, s="Overlap: \nRI = "+str(round(metrics.rand_score(list(data["Clusters"]),list(data["Real"]))*100, 2))+"%"
+                       +"\nARI = "+str(round(metrics.adjusted_rand_score(list(data["Clusters"]),list(data["Real"]))*100, 2))+"%", fontsize=11)
             
         else:
+            # i round all the values to 2 decimals and sort from lower to higher
+            sorted_ = pd.Series([round(i,2) for i in pamg_dict[data_name]], index=pamg_dict[data_name].index).sort_values()
+            # determin a palette of colors of the same size
+            pamg_pal = sns.cubehelix_palette(sorted_.size, dark=0.2, light=1)
+            # zip together the sorted pamg values and color vector
+            pamg_lut = dict(zip(sorted_, pamg_pal))
+            pamg_colors = sorted_.map(pamg_lut)
+
+            sorted_df = pd.DataFrame(pamg_colors)
+            sorted_df["PAMG"] = list(pamg_colors)
+            data = pd.merge(data, sorted_df, left_index=True, right_index=True).drop(0, axis=1)
+
+
             data = data.sort_values("Clusters")
-            g=sns.clustermap(data = data.drop(["Clusters"],axis=1), cmap="Spectral", figsize=(7,7),
-                           cbar_kws = {"shrink": 0.3}, xticklabels=False, yticklabels=False, row_cluster=False, col_cluster=True, z_score=1,
-                           row_colors=data["Clusters"], colors_ratio=.03, metric="correlation")
-            
-        g.fig.suptitle(signature_name+" signatures on "+data_name+" dataset", y=1.04, x=.58, fontsize=14)
+
+            g=sns.clustermap(data=data.drop(["Clusters", "PAMG"],axis=1), cmap="Spectral", figsize=(5,5), cbar_kws = {"shrink": 0.8, "fraction":0.1}, xticklabels=False, yticklabels=False, row_cluster=False, col_cluster=True, z_score=1,
+                           row_colors=pd.DataFrame([data["Clusters"], data["PAMG"]]).T, colors_ratio=.03, metric="correlation")           
+
+            # add colorbar for PAMG
+            norm = plt.Normalize(pamg_dict[data_name].min(), pamg_dict[data_name].max())
+            sm = plt.cm.ScalarMappable(cmap=sns.cubehelix_palette(pamg_dict[data_name].unique().size, dark=0.2, light=1, as_cmap=True), norm=norm)
+            sm.set_array([])
+            ax = g.ax_heatmap
+            #ax.figure.colorbar(sm, shrink=1, fraction=0.8) #, ticks=np.arange(start=pamg_dict[data_name].min(), stop=pamg_dict[data_name].max(), step=1))
+            #-----------------------
+
+        g.fig.suptitle(signature_name+" signature \non "+data_name+" data\n", y=1.04, x=.58, fontsize=14)
         ax = g.ax_heatmap
-        ax.set_xlabel("Signatures", fontsize=12)
+        ax.set_xlabel("Signature", fontsize=12)
         ax.set_ylabel("Samples", fontsize=12)
-        plt.show()    
         return(clust_lab)
         
     else:
