@@ -2,6 +2,7 @@
 moffitt_df      <- read.table(...)
 collisson_df    <- read.table(...)
 bailey_df       <- read.table(...)
+puleo_df       <- read.table(...)
 icgc_array_df   <- read.table(...)
 badea_df        <- read.table(...)
 tcga_df         <- read.table(...)
@@ -36,6 +37,7 @@ rna = sc_filter@assays$RNA@count
 rna_moffitt = rna[rownames(rna) %in% intersect(rownames(rna), rownames(moffitt_df)), ]
 rna_collisson = rna[rownames(rna) %in% intersect(rownames(rna), rownames(collisson_df)), ]
 rna_bailey = rna[rownames(rna) %in% intersect(rownames(rna), rownames(bailey_df)), ]
+rna_puleo = rna[rownames(rna) %in% intersect(rownames(rna), rownames(puleo_df)), ]
 rna_icgc_array = rna[rownames(rna) %in% intersect(rownames(rna), rownames(icgc_array_df)), ]
 rna_badea = rna[rownames(rna) %in% intersect(rownames(rna), rownames(badea_df)), ]
 rna_tcga = rna[rownames(rna) %in% intersect(rownames(rna), rownames(tcga_df)), ]
@@ -45,6 +47,7 @@ rna_sandhu = rna[rownames(rna) %in% intersect(rownames(rna), rownames(sandhu_df)
 sig_mat_moffitt    = omnideconv::build_model(rna_moffitt, cell_type_annotations = as.vector(sc_filter$Cluster),   method="cibersortx")
 sig_mat_collisson  = omnideconv::build_model(rna_collisson, cell_type_annotations = as.vector(sc_filter$Cluster), method="cibersortx")
 sig_mat_bailey     = omnideconv::build_model(rna_bailey, cell_type_annotations = as.vector(sc_filter$Cluster),    method="cibersortx")
+sig_mat_puleo      = omnideconv::build_model(rna_puleo, cell_type_annotations = as.vector(sc_filter$Cluster),     method="cibersortx")
 sig_mat_icgc_array = omnideconv::build_model(rna_icgc_array, cell_type_annotations = as.vector(sc_filter$Cluster),method="cibersortx")
 sig_mat_badea      = omnideconv::build_model(rna_badea, cell_type_annotations = as.vector(sc_filter$Cluster),     method="cibersortx")
 sig_mat_tcga       = omnideconv::build_model(rna_tcga, cell_type_annotations = as.vector(sc_filter$Cluster),      method="cibersortx")
@@ -54,6 +57,7 @@ sig_mat_sandhu     = omnideconv::build_model(rna_sandhu, cell_type_annotations =
 deconv_moffitt    = omnideconv::deconvolute(bulk_gene_expression=moffitt_df, signature=sig_mat_moffitt, method="cibersortx")
 deconv_collisson  = omnideconv::deconvolute(bulk_gene_expression=collisson_df, signature=sig_mat_collisson, method="cibersortx")
 deconv_bailey     = omnideconv::deconvolute(bulk_gene_expression=bailey_df, signature=sig_mat_bailey, method="cibersortx")
+deconv_puleo      = omnideconv::deconvolute(bulk_gene_expression=puleo_df, signature=sig_mat_puleo, method="cibersortx")
 deconv_icgc_array = omnideconv::deconvolute(bulk_gene_expression=icgc_array_df, signature=sig_mat_icgc_array, method="cibersortx")
 deconv_badea      = omnideconv::deconvolute(bulk_gene_expression=badea_df, signature=sig_mat_badea, method="cibersortx")
 deconv_tcga       = omnideconv::deconvolute(bulk_gene_expression=tcga_df, signature=sig_mat_tcga, method="cibersortx")
@@ -63,6 +67,7 @@ deconv_sandhu     = omnideconv::deconvolute(bulk_gene_expression=sandhu_df, sign
 write.csv(deconv_moffitt, ...)
 write.csv(deconv_collisson, ...)
 write.csv(deconv_bailey, ...)
+write.csv(deconv_puleo, ...)
 write.csv(deconv_badea, ...)
 write.csv(deconv_yang, ...)
 write.csv(deconv_sandhu, ...)
