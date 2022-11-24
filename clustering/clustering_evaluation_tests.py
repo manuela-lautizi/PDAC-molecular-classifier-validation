@@ -63,6 +63,14 @@ def test_clusters(data, data_name, signature, signature_name, subtype, z_score):
             pval.append(p)
         a, correct_pval, b, c = multipletests(pvals=pval, alpha=0.05, method="bonferroni")
         return(-np.log10(correct_pval))
+      
+    elif nclust==5 and min([list(data.index).count(x) for x in set(data.index)]) >1:
+        pval = []
+        for i in data.columns:
+            F, p = stats.kruskal(data.loc["1", i], data.loc["2", i], data.loc["3", i], data.loc["4", i], data.loc["5", i])
+            pval.append(p)
+        a, correct_pval, b, c = multipletests(pvals=pval, alpha=0.05, method="bonferroni")
+        return(-np.log10(correct_pval))
     
     elif min([list(data.index).count(x) for x in set(data.index)]) == 1:
         cluster_1_sample = min([(x,list(data.index).count(x)) for x in set(data.index)], key = lambda t: t[1])[0]
@@ -95,7 +103,7 @@ for data_name, data in data_dict.items():
 import matplotlib.pyplot as plt
        
 for k in pval_distr_dict.keys():
-    for i in list(enumerate(["Moffitt", "Collisson", "Bailey"])):
+    for i in list(enumerate(["Moffitt", "Collisson", "Bailey", "Puleo"])):
         plt.figure(figsize=(5,1.2))
         plt.boxplot(pval_distr_dict[k][i[0]], vert=False); plt.xlabel("-log10(adjusted pvalue)", fontsize=16); plt.xticks(fontsize=14);
         plt.axvline(-np.log10(0.05), color="darkred", linestyle='--', lw=1.2); plt.title(str(i[1]))
