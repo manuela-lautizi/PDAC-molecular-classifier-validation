@@ -26,7 +26,8 @@ data = dictionary with names of data with survival info as keys and samples name
 #########################################
 pred = sictionary with predictions: {"classification_train_model_1":{"test_data_1":predicted_labels, "test_data_2":predicted_labels,...}, ...}
 
-where, given three signatures X,Y,Z, the models are nine:
-models = ["X data - X signatures", "X data - Y signatures", "X data - Z signatures",
-          "Y data - X signatures", "Y data - Y signatures", "Y data - Z signatures",
-          "Z data - X signatures", "Z data - Y signatures", "Z data - Z signatures"]
+where, given three signatures X,Y,Z,J, the models are 16:
+models = ["X data - X signatures", "X data - Y signatures", "X data - Z signatures", "X data - J signatures",
+          "Y data - X signatures", "Y data - Y signatures", "Y data - Z signatures", "Y data - J signatures",
+          "Z data - X signatures", "Z data - Y signatures", "Z data - Z signatures", "Z data - J signatures",
+          "J data - X signatures", "J data - Y signatures", "J data - Z signatures", "J data - J signatures"]
