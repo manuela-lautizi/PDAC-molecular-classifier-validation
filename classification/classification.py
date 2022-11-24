@@ -50,10 +50,8 @@ def classification(data_dict, train_data_dict, train_model, test_data_name, z_sc
     return (y_pred.tolist())
 
 #######################################################################################
-# Run the function using the nine models
-RF_models = ["Moffitt data - Moffitt genes", "Moffitt data - Collisson genes", "Moffitt data - Bailey genes", 
-             "Collisson data - Moffitt genes", "Collisson data - Collisson genes", "Collisson data - Bailey genes",
-             "Bailey data - Moffitt genes", "Bailey data - Collisson genes", "Bailey data - Bailey genes"]
+# Run the function using the 16 models
+RF_models = ["Moffitt data - Moffitt genes", "Moffitt data - Collisson genes", "Moffitt data - Bailey genes", ...]
 
 res_dict = {model:{} for model in RF_models}
 """
