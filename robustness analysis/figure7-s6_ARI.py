@@ -72,6 +72,7 @@ def clusters_comparison(signature_dict, data_dict, z_score, n_times, measure):
     moff_res = pd.DataFrame(compare_dict["Moffitt et al."])
     coll_res = pd.DataFrame(compare_dict["Collisson et al."])
     bailey_res = pd.DataFrame(compare_dict["Bailey et al."])
+    puleo_res = pd.DataFrame(compare_dict["Puleo et al."])
     
     # =============================================================================
     # add pairwised random comparison
@@ -94,14 +95,17 @@ def clusters_comparison(signature_dict, data_dict, z_score, n_times, measure):
     moff_res_rand = pd.DataFrame(compute_scores["Moffitt et al."])
     coll_res_rand = pd.DataFrame(compute_scores["Collisson et al."])
     bailey_res_rand = pd.DataFrame(compute_scores["Bailey et al."])
+    puleo_res_rand = pd.DataFrame(compute_scores["Puleo et al."])
     
     data_moff   = []
     data_coll   = []
     data_bailey = []
+    data_puleo = []
     for i in data_dict.keys():
         data_moff.append(moff_res[i]); data_moff.append(moff_res_rand[i]) #list of scores: Real vs Random - Random vs Random
         data_coll.append(coll_res[i]); data_coll.append(coll_res_rand[i])
         data_bailey.append(bailey_res[i]); data_bailey.append(bailey_res_rand[i])
+        data_puleo.append(puleo_res[i]); data_puleo.append(puleo_res_rand[i])
 
     return moff_res, coll_res, bailey_res, moff_res_rand, coll_res_rand, bailey_res_rand, data_moff, data_coll, data_bailey
 
@@ -110,17 +114,17 @@ def clusters_comparison(signature_dict, data_dict, z_score, n_times, measure):
 # =============================================================================
 
 from sklearn.metrics.cluster import adjusted_rand_score
-moff_res, coll_res, bailey_res, moff_res_rand, coll_res_rand, bailey_res_rand, data_moff, data_coll, data_bailey = clusters_comparison(signature_dict, data_dict, 
-                                                                                                                    z_score=True, n_times=1000) 
+moff_res, coll_res, bailey_res, puleo_res, moff_res_rand, coll_res_rand, bailey_res_rand, puleo_res_rand, data_moff, data_coll, data_bailey, data_puleo 
+= clusters_comparison(signature_dict, data_dict, z_score=True, n_times=1000) 
 # =============================================================================
-#  Figure S3
+#  Figure S6
 # =============================================================================
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.lines import Line2D 
 import numpy as np
                                                                              
-for s in [("Moffitt",data_moff),("Collisson",data_coll),("Bailey",data_bailey)]:
+for s in [("Moffitt",data_moff),("Collisson",data_coll),("Bailey",data_bailey), ("Puleo", data_puleo)]:
 
     title_bp = s[0]
     data_bp  = s[1]
@@ -172,7 +176,7 @@ for s in [("Moffitt",data_moff),("Collisson",data_coll),("Bailey",data_bailey)]:
     plt.show()
     
 # =============================================================================
-#  Figure 6
+#  Figure 7
 # =============================================================================
 import pandas as pd
 
@@ -188,9 +192,12 @@ for i in data_coll: ssmd_dict_coll[i.name].append(i)
 
 ssmd_dict_bailey = {k:[] for k in data_dict.keys()}
 for i in data_bailey: ssmd_dict_bailey[i.name].append(i)
+ 
+ssmd_dict_puleo = {k:[] for k in data_dict.keys()}
+for i in data_puleo: ssmd_dict_puleo[i.name].append(i)
 
 
-ssmd_df = pd.DataFrame(index=["Moffitt", "Collisson", "Bailey"], columns=data_dict.keys(), dtype="float")
+ssmd_df = pd.DataFrame(index=["Moffitt", "Collisson", "Bailey", "Puleo"], columns=data_dict.keys(), dtype="float")
 
 for k,v in ssmd_dict_moff.items():
     ssmd_df.loc["Moffitt"][k] = compute_ssmd(v[0],v[1])
@@ -200,6 +207,9 @@ for k,v in ssmd_dict_coll.items():
     
 for k,v in ssmd_dict_bailey.items():
     ssmd_df.loc["Bailey"][k] = compute_ssmd(v[0],v[1])
+    
+for k,v in ssmd_dict_puleo.items():
+    ssmd_df.loc["Puleo"][k] = compute_ssmd(v[0],v[1])
     
 plt.figure(figsize=(5,2))
 sns.heatmap(-np.array(ssmd_df), annot=True, xticklabels=ssmd_df.columns, yticklabels=ssmd_df.index, linewidths=1); 
