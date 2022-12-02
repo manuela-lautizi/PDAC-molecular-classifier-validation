@@ -22,9 +22,9 @@ import numpy as np
 import seaborn as sns
 
 surv_pval = {k:{k:[] for k in surv.keys()} for k in pred.keys()}
-surv_pval_moff = {'Moffitt signature':[], 'Collisson signature':[], 'Bailey signature':[]}
-surv_pval_coll = {'Moffitt signature':[], 'Collisson signature':[], 'Bailey signature':[]}
-surv_pval_bail = {'Moffitt signature':[], 'Collisson signature':[], 'Bailey signature':[]}
+surv_pval_moff = {'Moffitt signature':[], 'Collisson signature':[], 'Bailey signature':[], 'Puleo signature':[]}
+surv_pval_coll = {'Moffitt signature':[], 'Collisson signature':[], 'Bailey signature':[], 'Puleo signature':[]}
+surv_pval_bail = {'Moffitt signature':[], 'Collisson signature':[], 'Bailey signature':[], 'Puleo signature':[]}
     
 for model in pred.keys():
     for surv_name, surv_df in surv.items():
@@ -92,30 +92,16 @@ surv_pval_coll = pd.DataFrame(surv_pval_coll, index = pair_test_coll)
 surv_pval_coll.index = [i.replace(" PDA","").replace("-PDA","") for i in surv_pval_coll.index]
 surv_pval_bail = pd.DataFrame(surv_pval_bail, index = pair_test_bail)
 surv_pval_bail.index = [i.replace("Pancreatic Progenitor","PP") for i in surv_pval_bail.index]
+surv_pval_puleo = pd.DataFrame(surv_pval_puleo, index = pair_test_puleo)
 import matplotlib.lines as mlines
 
-# heatmap 1
-c = sns.clustermap(abs(-np.log10(surv_pval_moff.astype(float))), col_colors = ["orange", "peru", "brown"], row_colors = ["dodgerblue","violet","lightgrey","tomato","pink"], 
+# heatmap
+surv_pval_df = ...
+c = sns.clustermap(abs(-np.log10(surv_pval_df.astype(float))), col_colors = ["yellow", "orange", "peru", "brown"], row_colors = ["dodgerblue","violet","lightgrey","tomato","pink"], 
                    row_cluster=False, col_cluster=False, xticklabels=False, cmap='summer', figsize=(4,2), annot=True, annot_kws={"size": 11})
 c.ax_heatmap.set_yticklabels(c.ax_heatmap.get_ymajorticklabels(), fontsize = 13)
-c1 = mlines.Line2D([], [], color='orange', marker='s', markersize=11, label='Moffitt et al.', alpha=0.9)
-c2 = mlines.Line2D([], [], color='peru', marker='s', markersize=11, label='Collisson et al.', alpha=0.9)
-c3 = mlines.Line2D([], [], color='brown', marker='s', markersize=11, label='Bailey et al.', alpha=0.9)
-plt.legend(handles=[c1, c2, c3], title="Signature", loc=2)
-
-# heatmap 2
-c = sns.clustermap(abs(-np.log10(surv_pval_bail.astype(float))), row_cluster=False, col_cluster=False, col_colors=["orange", "peru", "brown"], xticklabels=False, 
-                   row_colors = ['dodgerblue']*6+['violet']*6+['lightgrey']*6+['tomato']*6+['pink']*6, cmap='summer', figsize=(7,10), annot=True, annot_kws={"size": 11})
-c.ax_heatmap.set_yticklabels(c.ax_heatmap.get_ymajorticklabels(), fontsize = 13)
-c4 = mlines.Line2D([], [], color='dodgerblue', marker='s', markersize=11, label='Moffitt et al.', alpha=0.9)
-c5 = mlines.Line2D([], [], color='violet', marker='s', markersize=11, label='Collisson et al.', alpha=0.9)
-c6 = mlines.Line2D([], [], color='lightgrey', marker='s', markersize=11, label='Bailey et al.', alpha=0.9)
-c7 = mlines.Line2D([], [], color='tomato', marker='s', markersize=11, label='TCGA-PAAD', alpha=0.9)
-c8 = mlines.Line2D([], [], color='pink', marker='s', markersize=11, label='Yang et al.', alpha=0.9)
-plt.legend(handles=[c4,c5,c6,c7,c8], title="Cohort", loc=2)
-
-# heatmap 3
-c = sns.clustermap(abs(-np.log10(surv_pval_coll.astype(float))), row_cluster=False, col_cluster=False, col_colors =["orange", "peru", "brown"], xticklabels=False, 
-                   row_colors = ['dodgerblue']*3+['orange']*3+['lightgrey']*3+['tomato']*3+['pink']*3, cmap='summer', figsize=(5,7), annot=True, annot_kws={"size": 11})
-c.ax_heatmap.set_yticklabels(c.ax_heatmap.get_ymajorticklabels(), fontsize = 13)
-
+c1 = mlines.Line2D([], [], color='yellow', marker='s', markersize=11, label='Moffitt et al.', alpha=0.9)
+c2 = mlines.Line2D([], [], color='orange', marker='s', markersize=11, label='Collisson et al.', alpha=0.9)
+c3 = mlines.Line2D([], [], color='peru', marker='s', markersize=11, label='Bailey et al.', alpha=0.9)
+c4 = mlines.Line2D([], [], color='brown', marker='s', markersize=11, label='Puleo et al.', alpha=0.9)
+plt.legend(handles=[c1, c2, c3, c4], title="Signature", loc=2)
