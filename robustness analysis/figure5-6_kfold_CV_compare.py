@@ -4,7 +4,7 @@
 imput parameters:
 n_rep            = number of repetitions
 k                = number of k-fold cross-validation
-RF_dict_accuracy = nested dictionary to store the cross-validation results; keys are the 9 models, 
+RF_dict_accuracy = nested dictionary to store the cross-validation results; keys are the 16 models, 
                  values are dictionary containing 3 lists to collect cross-validation accuracy values computed using real 
                  or random signatures,
                  or shuffled subtype labels (e.g. {"Moffitt data - Moffitt genes":{"Real":[],"Random":[],"Shuffled":[]}, ...})
@@ -49,7 +49,7 @@ def RF_CV_compare(n_rep, k, RF_dict_accuracy, train_data_dict, signature_dict , 
             cv  = cross_val_score(rf_real, df_real, y, cv=k, scoring="accuracy") 
             RF_dict_accuracy[model_name]["Real"].append(np.mean(cv))
 
-            # we want to built the models only using the signatures from Moffitt, Collisson and Bailey
+            # we want to built the models only using the signatures from Moffitt, Collisson Bailey and Puleo
             # but want to keep Badea et al. for performance evaluation since it provides real subtype labels
             if train_data_name != "Badea et al.":
                 # train model using Random signatures
@@ -73,7 +73,7 @@ def RF_CV_compare(n_rep, k, RF_dict_accuracy, train_data_dict, signature_dict , 
     return(RF_dict_accuracy)
 
 # =============================================================================
-#  Figure 4
+#  Figure 5
 # =============================================================================
 res = RF_CV_compare(n_rep=1000, k=5, RF_dict_accuracy, train_data_dict, signature_dict , z_score)
 
@@ -85,11 +85,13 @@ fig, ax1 = plt.subplots(figsize=(13, 6))
 fig.subplots_adjust(left=0.075, right=0.95, top=0.9, bottom=0.25)
 
 bp = ax1.boxplot([res['Moffitt data - Moffitt genes']["Real"], res['Collisson data - Moffitt genes']["Real"], 
-                  res['Bailey data - Moffitt genes']["Real"],  res['Badea data - Moffitt genes']["Real"]]
+                  res['Bailey data - Moffitt genes']["Real"],  res['Badea data - Moffitt genes']["Real"], res['Puleo data - Moffitt genes']["Real"]]
                 +[res['Moffitt data - Collisson genes']["Real"], res['Collisson data - Collisson genes']["Real"], 
-                  res['Bailey data - Collisson genes']["Real"],  res['Badea data - Collisson genes']["Real"]]
+                  res['Bailey data - Collisson genes']["Real"],  res['Badea data - Collisson genes']["Real"], res['Puleo data - Collisson genes']["Real"]]
                 +[res['Moffitt data - Bailey genes']["Real"], res['Collisson data - Bailey genes']["Real"], 
-                  res['Bailey data - Bailey genes']["Real"],  res['Badea data - Bailey genes']["Real"]],
+                  res['Bailey data - Bailey genes']["Real"],  res['Badea data - Bailey genes']["Real"], res['Puleo data - Bailey genes']["Real"]]
+                 +[res['Moffitt data - Puleo genes']["Real"], res['Collisson data - Puleo genes']["Real"], 
+                  res['Bailey data - Puleo genes']["Real"],  res['Badea data - Puleo genes']["Real"], res['Puleo data - Puleo genes']["Real"]],
                  notch=0, sym='+', vert=1, whis=1.5)
 
 plt.setp(bp['boxes'], color='grey', linewidth=1)
@@ -103,8 +105,8 @@ ax1.set_title("1000 repeated K-fold cross validation (mean accuracy)", fontsize=
 ax1.set_xlabel("")
 ax1.set_xticks(list(range(1,13)))
 ax1.set_yticks(list(range(0,1)))
-box_colors = ['darkorange', 'royalblue', 'mediumseagreen', 'purple']
-num_boxes = 12
+box_colors = ['darkorange', 'royalblue', 'mediumseagreen', 'pink', 'purple']
+num_boxes = 20
 medians = np.empty(num_boxes)
 for i in range(num_boxes):
     box = bp['boxes'][i]
@@ -117,10 +119,6 @@ for i in range(num_boxes):
     ax1.add_patch(Polygon(box_coords, facecolor=box_colors[i % 4], alpha=0.6))
 
 ax1.set_xticklabels([])
-
-ax1.text(1.5, -0.07, "Moffitt et al. signatures", fontsize=14)  
-ax1.text(5.5, -0.07, "Collisson et al. signatures", fontsize=14) 
-ax1.text(9.5, -0.07, "Bailey et al. signatures", fontsize=14) 
                      
 for i in [4.5, 8.5]:            
     ax1.axvline(i, color="grey", linestyle='--', lw=1)
@@ -138,25 +136,13 @@ ax1.grid(color='grey', axis='y', linestyle='--', linewidth=0.4, alpha=0.6)
 plt.show()
 
 # =============================================================================
-#  Figure 5
+#  Figure 6
 # =============================================================================
 
 moff_merge_box_moff_genes = [res['Moffitt data - '+"Moffitt genes"]["Real"], res['Moffitt data - '+"Moffitt genes"]["Random"], res['Moffitt data - '+"Moffitt genes"]["Shuffled"]]
-moff_merge_box_coll_genes = [res['Moffitt data - '+"Collisson genes"]["Real"], res['Moffitt data - '+"Collisson genes"]["Random"], res['Moffitt data - '+"Collisson genes"]["Shuffled"]]
-moff_merge_box_bail_genes = [res['Moffitt data - '+"Bailey genes"]["Real"], res['Moffitt data - '+"Bailey genes"]["Random"], res['Moffitt data - '+"Bailey genes"]["Shuffled"]]
-merged_boxes_moffitt = moff_merge_box_moff_genes + moff_merge_box_coll_genes + moff_merge_box_bail_genes
+# same is done for collisson, bailey and puleo genes
 
-coll_merge_box_moff_genes = [res['Collisson data - '+"Moffitt genes"]["Real"],   res['Collisson data - '+"Moffitt genes"]["Random"],   res['Collisson data - '+"Moffitt genes"]["Shuffled"]]
-coll_merge_box_coll_genes = [res['Collisson data - '+"Collisson genes"]["Real"], res['Collisson data - '+"Collisson genes"]["Random"], res['Collisson data - '+"Collisson genes"]["Shuffled"]]
-coll_merge_box_bail_genes = [res['Collisson data - '+"Bailey genes"]["Real"],    res['Collisson data - '+"Bailey genes"]["Random"],    res['Collisson data - '+"Bailey genes"]["Shuffled"]]
-merged_boxes_collisson = coll_merge_box_moff_genes + coll_merge_box_coll_genes + coll_merge_box_bail_genes
-
-bail_merge_box_moff_genes = [res['Bailey data - '+"Moffitt genes"]["Real"],   res['Bailey data - '+"Moffitt genes"]["Random"],   res['Bailey data - '+"Moffitt genes"]["Shuffled"]]
-bail_merge_box_coll_genes = [res['Bailey data - '+"Collisson genes"]["Real"], res['Bailey data - '+"Collisson genes"]["Random"], res['Bailey data - '+"Collisson genes"]["Shuffled"]]
-bail_merge_box_bail_genes = [res['Bailey data - '+"Bailey genes"]["Real"],    res['Bailey data - '+"Bailey genes"]["Random"],    res['Bailey data - '+"Bailey genes"]["Shuffled"]]
-merged_boxes_bailey = bail_merge_box_moff_genes + bail_merge_box_coll_genes + bail_merge_box_bail_genes 
-
-all_boxes = moff_merge_box_moff_genes + moff_merge_box_coll_genes + moff_merge_box_bail_genes + coll_merge_box_moff_genes + coll_merge_box_coll_genes + coll_merge_box_bail_genes + bail_merge_box_moff_genes + bail_merge_box_coll_genes + bail_merge_box_bail_genes 
+all_boxes = moff_merge_box_moff_genes + moff_merge_box_coll_genes + moff_merge_box_bail_genes + moff_merge_box_puleo_genes + coll_merge_box_moff_genes + coll_merge_box_coll_genes + coll_merge_box_bail_genes + coll_merge_box_puleo_genes + bail_merge_box_moff_genes + bail_merge_box_coll_genes + bail_merge_box_bail_genes + bail_merge_box_puleo_genes + puleo_merge_box_moff_genes + puleo_merge_box_coll_genes + puleo_merge_box_bail_genes + puleo_merge_box_puleo_genes 
 fig, ax1 = plt.subplots(figsize=(15, 6))
 fig.canvas.set_window_title('A Boxplot Example')
 fig.subplots_adjust(left=0.075, right=0.95, top=0.9, bottom=0.25)
@@ -176,7 +162,7 @@ ax1.set_ylabel('K-fold CV (mean accuracy)', fontsize=14)
 ax1.set_xticks(list(range(1,28)))
 ax1.set_yticks(list(range(0,1)))
 box_colors = ['orchid', 'mediumaquamarine', 'sandybrown']
-num_boxes = 27
+num_boxes = 48
 medians = np.empty(num_boxes)
 for i in range(num_boxes):
     box = bp['boxes'][i]
@@ -188,20 +174,6 @@ for i in range(num_boxes):
     box_coords = np.column_stack([boxX, boxY])
     ax1.add_patch(Polygon(box_coords, facecolor=box_colors[i % 3], alpha=0.6))
 ax1.set_xticklabels([])
-
-ax1.text(4, -0.07, "Moffitt et al.",    fontsize=14)  
-ax1.text(13, -0.07, "Collisson et al.", fontsize=14) 
-ax1.text(22.2, -0.07, "Bailey et al.",  fontsize=14) 
-
-ax1.text(1,  1.04, "Moffitt et al.",   fontsize=14)  
-ax1.text(4,  1.04, "Collisson et al.", fontsize=14) 
-ax1.text(7,  1.04, "Bailey et al.",    fontsize=14) 
-ax1.text(10, 1.04, "Moffitt et al.",   fontsize=14)  
-ax1.text(13, 1.04, "Collisson et al.", fontsize=14) 
-ax1.text(16, 1.04, "Bailey et al.",    fontsize=14) 
-ax1.text(19, 1.04, "Moffitt et al.",   fontsize=14)  
-ax1.text(22, 1.04, "Collisson et al.", fontsize=14) 
-ax1.text(25, 1.04, "Bailey et al.",    fontsize=14) 
 
 ax1.text(13.3, -0.15, "Subtypes", fontsize=15) 
 ax1.text(13, 1.12, "Signatures:", fontsize=15) 
